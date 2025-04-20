@@ -2,35 +2,48 @@ FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Update and install all required packages
+# Update system and install core tools
 RUN apt update && apt install -y \
     curl \
-    software-properties-common \
-    gnupg2 \
+    wget \
     lsb-release \
     ca-certificates \
+    apt-transport-https \
+    software-properties-common \
+    gnupg2 \
     redis-server \
-    php8.3 php8.3-cli php8.3-mbstring php8.3-curl php8.3-xml php8.3-mysql \
-    php8.3-zip php8.3-bcmath php8.3-gd php8.3-common \
-    nodejs npm \
     supervisor
 
-# Make necessary directories
-RUN mkdir -p /app /var/www/html /var/log/supervisor
+# Add PHP 8.3 PPA and install PHP + extensions
+RUN add-apt-repository ppa:ondrej/php -y && \
+    apt update && \
+    apt install -y \
+    php8.3 \
+    php8.3-cli \
+    php8.3-mbstring \
+    php8.3-curl \
+    php8.3-xml \
+    php8.3-mysql \
+    php8.3-zip \
+    php8.3-bcmath \
+    php8.3-gd \
+    php8.3-common
 
-# Copy files
-COPY app/app.js /app/app.js
-COPY php/index.php /var/www/html/index.php
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# Install Node.js 22.x LTS
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt install -y nodejs
 
-# Set workdir for node app
-WORKDIR /app
+# Confirm versions
+RUN php -v && node -v && npm -v && redis-server --version
 
-# Install Fastify
-RUN npm install fastify
+# Create app directory
+WORKDIR /var/www/html
 
-# Expose required ports
-EXPOSE 6379 3110 8180
+# Copy app files
+COPY . .
 
-# Start all services using Supervisor
-CMD ["/usr/bin/supervisord", "-n"]
+# Expose necessary ports
+EXPOSE 3110 8180 6379
+
+# Default command
+CMD ["/bin/bash"]
