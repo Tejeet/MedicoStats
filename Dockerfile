@@ -1,23 +1,25 @@
-# Use official Ubuntu 22.04 as the base image
 FROM ubuntu:22.04
 
-# Set environment variables to avoid user prompts during install
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Update, install dependencies, and PHP 8.3 via PPA
+# Step 1: Install essential tools and dependencies
 RUN apt update && apt install -y \
-    software-properties-common && \
-    add-apt-repository ppa:ondrej/php -y && \
-    apt update && apt install -y \
     curl \
     wget \
     lsb-release \
     ca-certificates \
     apt-transport-https \
+    software-properties-common \
     gnupg2 \
     redis-server \
-    apache2 \
-    libapache2-mod-php8.3 \
+    supervisor \
+    nano \
+    git
+
+# Step 2: Install PHP 8.3 and required extensions
+RUN add-apt-repository ppa:ondrej/php -y && \
+    apt update && \
+    apt install -y \
     php8.3 \
     php8.3-cli \
     php8.3-mbstring \
@@ -27,35 +29,31 @@ RUN apt update && apt install -y \
     php8.3-zip \
     php8.3-bcmath \
     php8.3-gd \
-    php8.3-common \
-    supervisor \
-    nodejs \
-    npm && \
-    apt clean && rm -rf /var/lib/apt/lists/*
+    php8.3-common
 
-# Set PHP 8.3 as default
-RUN update-alternatives --set php /usr/bin/php8.3
+# Step 3: Install Node.js 22.x
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt install -y nodejs
 
-# Enable Apache mods (optional based on your app needs)
-RUN a2enmod rewrite
+# Step 4: Confirm installed versions
+RUN php -v && node -v && npm -v && redis-server --version
 
-# Create /home/node and /home/php directories
-RUN mkdir -p /home/node /home/php
+# Step 5: Copy PHP app to /var/www/html
+WORKDIR /var/www/html
+COPY ./php/ /var/www/html/
 
-# Copy Node.js app code to /home/node
-COPY ./node /home/node/
+# Step 6: Set Node.js working directory to /home/node
+WORKDIR /home/node
+COPY ./node/package*.json ./
+RUN npm install
+COPY ./node/ .
 
-# Copy PHP app code to /home/php
-COPY ./php /home/php/
+# Step 7: Configure Supervisor
+RUN mkdir -p /var/log/supervisor
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Set correct permissions
-RUN chown -R www-data:www-data /home/php /home/node
+# Step 8: Expose required ports
+EXPOSE 3110 8180 6379
 
-# Expose necessary ports
-EXPOSE 8180 3110 6379
-
-# Copy Supervisor config (optional if needed for managing both services)
-# COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# Start Supervisor to manage services like Apache, Redis, and Node.js
-CMD ["/usr/bin/supervisord", "-n"]
+# Step 9: Start all services via Supervisor
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
