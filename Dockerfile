@@ -2,7 +2,7 @@ FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Update system and install core tools
+# Update and install dependencies
 RUN apt update && apt install -y \
     curl \
     wget \
@@ -12,13 +12,8 @@ RUN apt update && apt install -y \
     software-properties-common \
     gnupg2 \
     redis-server \
-    supervisor \
-    nano
-
-# Add PHP 8.3 PPA and install PHP + extensions
-RUN add-apt-repository ppa:ondrej/php -y && \
-    apt update && \
-    apt install -y \
+    apache2 \
+    libapache2-mod-php \
     php8.3 \
     php8.3-cli \
     php8.3-mbstring \
@@ -28,27 +23,29 @@ RUN add-apt-repository ppa:ondrej/php -y && \
     php8.3-zip \
     php8.3-bcmath \
     php8.3-gd \
-    php8.3-common
+    php8.3-common \
+    supervisor
 
-# Install Node.js 22.x LTS
+# Install Node.js v22 LTS
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt install -y nodejs
 
 # Confirm versions
-RUN php -v && node -v && npm -v && redis-server --version
+RUN php -v && node -v && npm -v
 
-# Create app directory
+# Copy Apache + PHP files to /var/www/html
 WORKDIR /var/www/html
+COPY ./php ./php
 
-# Copy app files
-COPY . .
+# Copy Node.js app to /home
+WORKDIR /home
+COPY ./node ./node
 
-# Supervisor configuration
-RUN mkdir -p /var/log/supervisor
+# Copy Supervisor config
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Expose ports
-EXPOSE 3110 8180 6379
+EXPOSE 8180 3110 6379
 
-# Start supervisor (which starts all services)
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Start Supervisor
+CMD ["/usr/bin/supervisord", "-n"]
