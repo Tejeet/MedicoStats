@@ -7,7 +7,7 @@ NODE_PORT=3110
 PHP_PORT=8210
 REDIS_PORT=6379
 
-MEDIA_DIR="$(pwd)/media"
+MEDIA_DIR="$(pwd)/php/media"
 
 # Create local persistent media folder if it doesn't exist
 mkdir -p "$MEDIA_DIR"
