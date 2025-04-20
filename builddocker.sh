@@ -4,7 +4,7 @@
 IMAGE_NAME="php-node-refis-app"
 CONTAINER_NAME="php-node-refis-container"
 NODE_PORT=3110
-PHP_PORT=8180
+PHP_PORT=8210
 REDIS_PORT=6379
 
 # Build the Docker image
