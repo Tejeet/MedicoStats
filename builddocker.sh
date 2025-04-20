@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Constants
-IMAGE_NAME="php-node-refis-app"
-CONTAINER_NAME="php-node-refis-container"
+IMAGE_NAME="php_node_refis_app"
+CONTAINER_NAME="php_node_refis_container"
 NODE_PORT=3110
 PHP_PORT=8210
 REDIS_PORT=6379
