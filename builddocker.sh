@@ -8,7 +8,7 @@ PHP_PORT=8210
 REDIS_PORT=6379
 
 # Media directory outside the repo (in the user's home directory)
-MEDIA_DIR="/home/docker-media/$CONTAINER_NAME"
+MEDIA_DIR="home/docker_media/$CONTAINER_NAME"
 
 # Create the media directory if it doesn't exist
 mkdir -p "$MEDIA_DIR"
