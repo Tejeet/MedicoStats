@@ -12,7 +12,8 @@ RUN apt update && apt install -y \
     software-properties-common \
     gnupg2 \
     redis-server \
-    supervisor
+    supervisor \
+    nano
 
 # Add PHP 8.3 PPA and install PHP + extensions
 RUN add-apt-repository ppa:ondrej/php -y && \
@@ -42,8 +43,12 @@ WORKDIR /var/www/html
 # Copy app files
 COPY . .
 
-# Expose necessary ports
+# Supervisor configuration
+RUN mkdir -p /var/log/supervisor
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Expose ports
 EXPOSE 3110 8180 6379
 
-# Default command
-CMD ["/bin/bash"]
+# Start supervisor (which starts all services)
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
