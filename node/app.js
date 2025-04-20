@@ -10,7 +10,7 @@ const client = redis.createClient({
 client.connect()
   .then(() => console.log('Connected to Redis'))
   .catch(err => {
-    console.error('Redis connection error:', err);
+    console.error('Redis connection error :', err);
     process.exit(1);
   });
 
