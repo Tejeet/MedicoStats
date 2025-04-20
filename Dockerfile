@@ -31,6 +31,9 @@ RUN add-apt-repository ppa:ondrej/php -y && \
     php8.3-gd \
     php8.3-common
 
+# ✅ Update PHP upload limits to 50MB
+RUN echo "upload_max_filesize = 50M\npost_max_size = 100M\n" >> /etc/php/8.3/cli/php.ini
+
 # Step 3: Install Node.js 22.x
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt install -y nodejs
