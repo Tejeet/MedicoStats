@@ -3,7 +3,7 @@
 # Constants
 IMAGE_NAME="node_php_redis"
 CONTAINER_NAME="nodephpcontainer"
-NODE_PORT=3180
+NODE_PORT=3110
 PHP_PORT=8180
 REDIS_PORT=6379
 
