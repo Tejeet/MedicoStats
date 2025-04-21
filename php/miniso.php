@@ -37,6 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['upload'])) {
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
+    if (curl_errno($ch)) {
+        echo "<p style='color: red;'>cURL Error: " . curl_error($ch) . "</p>";
+    }
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
     if ($httpCode === 200) {
         echo "<p style='color: green;'>File uploaded to MinIO successfully: <strong>$fileName</strong></p>";
     } else {
