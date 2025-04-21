@@ -1,3 +1,11 @@
+<?php
+include("config.php");
+
+// Generate a random number (can be adjusted to your needs)
+$randomUser = rand(1000, 9999);
+
+?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -37,6 +45,16 @@
     <h3>Uploaded Files:</h3>
     <ul>
         <?php
+
+        // Insert into users table
+        $sql = "INSERT INTO users (user, createdon) VALUES ('$randomUser', '$randomUser')";
+
+        if ($con->query($sql) === TRUE) {
+            echo "Random user $randomUser added successfully.<br>";
+        } else {
+            echo "Error: " . $sql . "<br>" . $con->error;
+        }
+
         $mediaPath = __DIR__ . '/media/';
         if (is_dir($mediaPath)) {
             $files = array_diff(scandir($mediaPath), array('.', '..'));
