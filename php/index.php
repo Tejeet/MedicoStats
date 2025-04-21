@@ -1,9 +1,8 @@
 <?php
 include("config.php");
 
-// Generate a random number (can be adjusted to your needs)
+// Generate a random number
 $randomUser = rand(1000, 9999);
-
 ?>
 
 <!DOCTYPE html>
@@ -13,6 +12,15 @@ $randomUser = rand(1000, 9999);
 </head>
 <body>
     <h2>Upload a File</h2>
+
+    <!-- Show DB status -->
+    <?php
+    if ($db_status) {
+        echo "<p style='color:green;'>✅ DB Connected</p>";
+    } else {
+        echo "<p style='color:red;'>❌ DB Connection Failed</p>";
+    }
+    ?>
 
     <?php
     // Handle file upload
@@ -45,14 +53,14 @@ $randomUser = rand(1000, 9999);
     <h3>Uploaded Files:</h3>
     <ul>
         <?php
-
-        // Insert into users table
-        $sql = "INSERT INTO users (user, createdon) VALUES ('$randomUser', '$randomUser')";
-
-        if ($con->query($sql) === TRUE) {
-            echo "Random user $randomUser added successfully.<br>";
-        } else {
-            echo "Error: " . $sql . "<br>" . $con->error;
+        if ($db_status) {
+            try {
+                $sql = "INSERT INTO users (user, createdon) VALUES ('$randomUser', '$randomUser')";
+                $con->query($sql);
+                echo "Random user $randomUser added successfully.<br>";
+            } catch (mysqli_sql_exception $e) {
+                echo "Insert error: " . $e->getMessage() . "<br>";
+            }
         }
 
         $mediaPath = __DIR__ . '/media/';
