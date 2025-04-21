@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['upload'])) {
     $ch = curl_init();
     curl_setopt_array($ch, [
         CURLOPT_URL => $uploadUrl,
-        CURLOPT_CUSTOMREQUEST => "PUT",
+        CURLOPT_PUT => true, // ✅ Required for streaming from file
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_INFILE => $fileHandle,
         CURLOPT_INFILESIZE => $fileSize,
