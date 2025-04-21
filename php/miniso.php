@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['upload'])) {
     $contentType = $fileType;
     $encodedFileName = rawurlencode($fileName);
     $resourcePath = "/$bucketName/$encodedFileName";
-    
+
     $stringToSign = "PUT\n\n$contentType\n$date\n$resourcePath";
     $signature = base64_encode(hash_hmac('sha1', $stringToSign, $secretKey, true));
 
@@ -79,10 +79,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['upload'])) {
     </form>
 
     <hr>
-    <h3>Files in Bucket:</h3>
+    <h3>Files in Bucket (Simple Listing):</h3>
     <ul>
         <?php
-        // List bucket contents
+        // List bucket contents (simple)
         $ch = curl_init("$minioEndpoint/$bucketName/");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $listResponse = curl_exec($ch);
@@ -105,5 +105,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['upload'])) {
         }
         ?>
     </ul>
+
+    <hr>
+    <h3>All Files in Demo Bucket:</h3>
+    <table border="1" cellpadding="6" cellspacing="0">
+        <thead>
+            <tr>
+                <th>File Name</th>
+                <th>Size (bytes)</th>
+                <th>Last Modified</th>
+                <th>Download</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            // Reuse or re-fetch the list response for detailed table view
+            $ch = curl_init("$minioEndpoint/$bucketName/");
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $listResponse = curl_exec($ch);
+            curl_close($ch);
+
+            if ($listResponse) {
+                libxml_use_internal_errors(true);
+                $xml = simplexml_load_string($listResponse);
+                if ($xml !== false) {
+                    foreach ($xml->Contents as $content) {
+                        $fileName = (string)$content->Key;
+                        $fileSize = (string)$content->Size;
+                        $lastModified = (string)$content->LastModified;
+                        $fileUrl = "$minioEndpoint/$bucketName/" . rawurlencode($fileName);
+                        echo "<tr>
+                                <td>$fileName</td>
+                                <td>$fileSize</td>
+                                <td>$lastModified</td>
+                                <td><a href='$fileUrl' target='_blank'>Download</a></td>
+                            </tr>";
+                    }
+                } else {
+                    echo "<tr><td colspan='4'>Error parsing bucket contents</td></tr>";
+                }
+            } else {
+                echo "<tr><td colspan='4'>No files found or connection error</td></tr>";
+            }
+            ?>
+        </tbody>
+    </table>
 </body>
 </html>
