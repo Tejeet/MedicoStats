@@ -1,11 +1,10 @@
 <?php
 // MinIO Configuration
-$minioEndpoint = 'http://192.168.5.189:9040'; // MinIO server URL
-$accessKey = 'admin'; // Default access key
-$secretKey = 'password'; // Default secret key
-$bucketName = 'demo'; // Your bucket name
+$minioEndpoint = 'http://192.168.5.189:9040';
+$accessKey = 'admin';
+$secretKey = 'password';
+$bucketName = 'demo';
 
-// Handle file upload
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['upload'])) {
     $fileName = basename($_FILES['upload']['name']);
     $fileTempPath = $_FILES['upload']['tmp_name'];
@@ -20,32 +19,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['upload'])) {
     $stringToSign = "PUT\n\n$contentType\n$date\n$resourcePath";
     $signature = base64_encode(hash_hmac('sha1', $stringToSign, $secretKey, true));
 
-    // Upload to MinIO using cURL
+    // Upload to MinIO
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, "$minioEndpoint$resourcePath");
-    curl_setopt($ch, CURLOPT_PUT, true);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_INFILE, fopen($fileTempPath, 'rb'));
-    curl_setopt($ch, CURLOPT_INFILESIZE, $fileSize);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "Date: $date",
-        "Content-Type: $contentType",
-        "Authorization: AWS $accessKey:$signature"
+    curl_setopt_array($ch, [
+        CURLOPT_URL => "$minioEndpoint$resourcePath",
+        CURLOPT_CUSTOMREQUEST => "PUT",
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_INFILE => fopen($fileTempPath, 'rb'),
+        CURLOPT_INFILESIZE => $fileSize,
+        CURLOPT_HTTPHEADER => [
+            "Date: $date",
+            "Content-Type: $contentType",
+            "Authorization: AWS $accessKey:$signature"
+        ],
+        CURLOPT_TIMEOUT => 10
     ]);
 
     $response = curl_exec($ch);
+    $error = curl_error($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
-    if (curl_errno($ch)) {
-        echo "<p style='color: red;'>cURL Error: " . curl_error($ch) . "</p>";
-    }
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-    if ($httpCode === 200) {
-        echo "<p style='color: green;'>File uploaded to MinIO successfully: <strong>$fileName</strong></p>";
+    if ($error) {
+        echo "<p style='color: red;'>cURL Error: $error</p>";
+    } elseif ($httpCode === 200) {
+        echo "<p style='color: green;'>File uploaded successfully: <strong>$fileName</strong></p>";
     } else {
-        echo "<p style='color: red;'>Error uploading file (HTTP $httpCode)</p>";
+        echo "<p style='color: red;'>MinIO Error (HTTP $httpCode)</p>";
     }
 }
 ?>
@@ -58,31 +58,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['upload'])) {
 <body>
     <h2>Upload a File to MinIO</h2>
     <form action="" method="post" enctype="multipart/form-data">
-        <label>Select file to upload:</label>
         <input type="file" name="upload" required>
         <button type="submit">Upload</button>
     </form>
 
     <hr>
-    <h3>Files in MinIO Bucket:</h3>
+    <h3>Files in Bucket:</h3>
     <ul>
         <?php
-        // List files using MinIO API
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, "$minioEndpoint/$bucketName/");
+        $ch = curl_init("$minioEndpoint/$bucketName/");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);
         curl_close($ch);
 
         if ($response) {
+            libxml_use_internal_errors(true);
             $xml = simplexml_load_string($response);
-            foreach ($xml->Contents as $content) {
-                $fileName = (string)$content->Key;
-                $fileUrl = "$minioEndpoint/$bucketName/$fileName";
-                echo "<li><a href='$fileUrl' target='_blank'>$fileName</a></li>";
+            if ($xml !== false) {
+                foreach ($xml->Contents as $content) {
+                    $fileName = (string)$content->Key;
+                    $fileUrl = "$minioEndpoint/$bucketName/$fileName";
+                    echo "<li><a href='$fileUrl' target='_blank'>$fileName</a></li>";
+                }
+            } else {
+                echo "<li>Error parsing bucket contents</li>";
             }
         } else {
-            echo "<li>No files found in bucket</li>";
+            echo "<li>No files found or connection error</li>";
         }
         ?>
     </ul>
