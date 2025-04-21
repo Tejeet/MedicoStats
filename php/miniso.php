@@ -1,6 +1,6 @@
 <?php
 // MinIO Configuration
-$minioEndpoint = 'http://192.168.5.189:9001'; // MinIO server URL
+$minioEndpoint = 'http://192.168.5.189:9050'; // MinIO server URL
 $accessKey = 'admin'; // Default access key
 $secretKey = 'password'; // Default secret key
 $bucketName = 'demo'; // Your bucket name
