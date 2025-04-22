@@ -56,7 +56,7 @@ RUN mkdir -p /var/log/supervisor
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Step 8: Expose required ports
-EXPOSE 3110 8210 6379
+EXPOSE 3110 8210 6379 1884
 
 # Step 9: Start all services via Supervisor
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
