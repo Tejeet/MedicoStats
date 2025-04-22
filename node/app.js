@@ -42,9 +42,28 @@ fastify.listen({ port: 3110, host: '0.0.0.0' }, (err, address) => {
   console.log(`🚀 Fastify running at ${address}`);
 });
 
-fastify.get('/mqttstatus', async (request, reply) => {
-  return { mqtt: mqttServer.listening };
+fastify.get('/mqttdata', async (request, reply) => {
+  // Extract only safe and meaningful parts of the aedes object to avoid circular structure
+  const aedesInfo = {
+    connectedClients: aedes.connectedClients,
+    id: aedes.id,
+    broker: aedes.broker ? {
+      id: aedes.broker.id,
+      subscriptions: aedes.broker.subscriptions ? Object.keys(aedes.broker.subscriptions).length : 0,
+      retained: aedes.broker.retained ? Object.keys(aedes.broker.retained).length : 0,
+    } : {},
+    // You can add more aedes internals here as needed
+  };
+
+  return {
+    mqttServer: {
+      listening: mqttServer.listening,
+      port: mqttServer.address().port
+    },
+    aedes: aedesInfo
+  };
 });
+
 
 // ======================
 // 🔌 MQTT - Aedes Setup
