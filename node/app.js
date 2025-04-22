@@ -60,7 +60,8 @@ fastify.get('/mqttdata', async (request, reply) => {
       listening: mqttServer.listening,
       port: mqttServer.address().port
     },
-    aedes: aedesInfo
+    aedes: aedesInfo,
+    data: aedes
   };
 });
 
