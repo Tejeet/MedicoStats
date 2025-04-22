@@ -164,7 +164,6 @@ function sendMessageToClient(clientId, topic, message) {
       if (err) {
         console.error(`❌ Error sending to ${clientId}:`, err);
       } else {
-        logMessageToDB(message, topic);
         console.log(`⏱️ Sent "${message}" to ${clientId} on topic "${topic}"`);
       }
     });
@@ -177,4 +176,4 @@ function sendMessageToClient(clientId, topic, message) {
 setInterval(() => {
   const now = new Date().toISOString();
   sendMessageToClient('1234', 'timestamp', now);
-}, 100);
+}, 10000);
