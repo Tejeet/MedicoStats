@@ -1,5 +1,5 @@
 // app/app.js
-const fastify = require('fastify')();
+const fastify = require('fastify')({ logger: true });  // <-- enable logger
 const redis = require('redis');
 
 // Connect to Redis running locally inside the container
@@ -17,7 +17,7 @@ client.connect()
 fastify.get('/', async (request, reply) => {
   try {
     const count = await client.incr('visit_count');
-    console.log("Incoming Request " + count);
+    fastify.log.info("Incoming Request " + count);
     return { message: 'Hello from Node.js', visits: count };
   } catch (err) {
     console.error('Redis error:', err);
