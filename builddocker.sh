@@ -3,10 +3,10 @@
 # Constants
 IMAGE_NAME="php_node_refis_app"
 CONTAINER_NAME="php_node_refis_container"
-NODE_PORT=3110
-PHP_PORT=8210
-REDIS_PORT=6379
-
+NODE_PORT   = 3110
+PHP_PORT    = 8210
+REDIS_PORT  = 6379
+MQTT_PORT   = 1884
 # Media directory outside the repo (in the user's home directory)
 MEDIA_DIR="/home/pi/docker_media/$CONTAINER_NAME"
 
@@ -30,6 +30,7 @@ docker run -d \
   -p $NODE_PORT:$NODE_PORT \
   -p $PHP_PORT:$PHP_PORT \
   -p $REDIS_PORT:$REDIS_PORT \
+  -p $MQTT_PORT:$MQTT_PORT \
   -v "$MEDIA_DIR":/var/www/html/media \
   --name "$CONTAINER_NAME" \
   "$IMAGE_NAME"
