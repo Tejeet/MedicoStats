@@ -79,7 +79,6 @@ fastify.get('/mqttdata', async (request, reply) => {
 
 
 
-
 // ======================
 // 🔌 MQTT - Aedes Setup
 // ======================
@@ -133,9 +132,24 @@ aedes.on('unsubscribe', (subscriptions, client) => {
   });
 });
 
-// On message publish
 aedes.on('publish', async (packet, client) => {
   if (client) {
     console.log(`📨 MQTT Message from ${client.id} on ${packet.topic}: ${packet.payload.toString()}`);
+
+    const userMsg = {
+      topic: packet.topic.toString(),
+      message: packet.payload.toString()  // Corrected 'messege' to 'message'
+    };
+
+    const logData = JSON.stringify(userMsg);
+
+    db.query('INSERT INTO logs (data) VALUES (?)', [logData], (err, result) => {
+      if (err) {
+        console.error('❌ Failed to log request:', err);
+      } else {
+        console.log(`📥 Logged request with ID ${result.insertId}`);
+      }
+    });
   }
 });
+
