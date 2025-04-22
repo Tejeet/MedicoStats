@@ -17,6 +17,7 @@ client.connect()
 fastify.get('/', async (request, reply) => {
   try {
     const count = await client.incr('visit_count');
+    console.log("Incoming Request " + count);
     return { message: 'Hello from Node.js', visits: count };
   } catch (err) {
     console.error('Redis error:', err);
