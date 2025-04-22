@@ -42,16 +42,21 @@ fastify.listen({ port: 3110, host: '0.0.0.0' }, (err, address) => {
   console.log(`🚀 Fastify running at ${address}`);
 });
 
+fastify.get('/mqttstatus', async (request, reply) => {
+  return { mqtt: mqttServer.listening };
+});
+
 // ======================
 // 🔌 MQTT - Aedes Setup
 // ======================
 const mqttServer = net.createServer(aedes.handle);
 const MQTT_PORT = 1884;
 
-mqttServer.listen(MQTT_PORT, () => {
+
+// Start MQTT TCP server on 0.0.0.0
+mqttServer.listen(MQTT_PORT, '0.0.0.0', () => {
   console.log(`📡 Aedes MQTT server started on port ${MQTT_PORT}`);
 });
-
 // ======================
 // 🧠 Aedes Event Handlers
 // ======================
