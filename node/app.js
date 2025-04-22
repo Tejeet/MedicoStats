@@ -135,21 +135,45 @@ aedes.on('unsubscribe', (subscriptions, client) => {
 aedes.on('publish', async (packet, client) => {
   if (client) {
     console.log(`📨 MQTT Message from ${client.id} on ${packet.topic}: ${packet.payload.toString()}`);
-
-    const userMsg = {
-      topic: packet.topic.toString(),
-      message: packet.payload.toString()  // Corrected 'messege' to 'message'
-    };
-
-    const logData = JSON.stringify(userMsg);
-
-    db.query('INSERT INTO logs (data) VALUES (?)', [logData], (err, result) => {
-      if (err) {
-        console.error('❌ Failed to log request:', err);
-      } else {
-        console.log(`📥 Logged request with ID ${result.insertId}`);
-      }
-    });
+    logMessageToDB(packet.topic.toString(), packet.payload.toString());
   }
 });
 
+
+// Database Queries
+
+// Function to log messages to database
+function logMessageToDB(topic, message) {
+  const logData = JSON.stringify({ topic, message });
+  db.query('INSERT INTO logs (data) VALUES (?)', [logData], (err, result) => {
+    if (err) console.error('❌ Failed to log request:', err);
+    else console.log(`📥 Logged request with ID ${result.insertId}`);
+  });
+}
+
+// Function to send a message to a specific client
+function sendMessageToClient(clientId, topic, message) {
+  const client = aedes.clients[clientId];
+  if (client) {
+    aedes.publish({
+      topic: topic,
+      payload: message,
+      qos: 0,
+      retain: false
+    }, (err) => {
+      if (err) {
+        console.error(`❌ Error sending to ${clientId}:`, err);
+      } else {
+        console.log(`⏱️ Sent "${message}" to ${clientId} on topic "${topic}"`);
+      }
+    });
+  } else {
+    console.log(`⚠️ Client "${clientId}" not connected.`);
+  }
+}
+
+// Send timestamp every 10 seconds to client "1234"
+setInterval(() => {
+  const now = new Date().toISOString();
+  sendMessageToClient('1234', 'timestamp', now);
+}, 10000);
