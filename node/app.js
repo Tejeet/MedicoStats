@@ -43,29 +43,40 @@ fastify.listen({ port: 3110, host: '0.0.0.0' }, (err, address) => {
 });
 
 fastify.get('/mqttdata', async (request, reply) => {
-  // Extract only safe and meaningful parts of the aedes object to avoid circular structure
-  const aedesInfo = {
-    connectedClients: aedes.connectedClients,
-    id: aedes.id,
-    broker: aedes.broker ? {
-      id: aedes.broker.id,
-      subscriptions: aedes.broker.subscriptions ? Object.keys(aedes.broker.subscriptions).length : 0,
-      retained: aedes.broker.retained ? Object.keys(aedes.broker.retained).length : 0,
-    } : {},
-  };
+  // Helper function to remove circular references from the object
+  function removeCircularReferences(obj, seen = new Set()) {
+    if (typeof obj !== 'object' || obj === null) {
+      return obj; // Base case: non-object or null
+    }
 
-  // Use Fastify's default JSON serialization method for circular structure handling
-  const aedesData = reply.serialize(aedes);
+    if (seen.has(obj)) {
+      return; // Circular reference found, return undefined
+    }
+
+    seen.add(obj);
+
+    // Recursively copy the object, handling circular references
+    const result = Array.isArray(obj) ? [] : {};
+
+    for (const [key, value] of Object.entries(obj)) {
+      result[key] = removeCircularReferences(value, seen);
+    }
+
+    return result;
+  }
+
+  // Safe stringified version of the aedes object without circular references
+  const aedesData = removeCircularReferences(aedes);
 
   return {
     mqttServer: {
       listening: mqttServer.listening,
       port: mqttServer.address().port
     },
-    aedes: aedesInfo,
-    data: aedesData
+    aedes: aedesData
   };
 });
+
 
 
 
