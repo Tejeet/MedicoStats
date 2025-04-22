@@ -52,8 +52,10 @@ fastify.get('/mqttdata', async (request, reply) => {
       subscriptions: aedes.broker.subscriptions ? Object.keys(aedes.broker.subscriptions).length : 0,
       retained: aedes.broker.retained ? Object.keys(aedes.broker.retained).length : 0,
     } : {},
-    // You can add more aedes internals here as needed
   };
+
+  // Use Fastify's default JSON serialization method for circular structure handling
+  const aedesData = reply.serialize(aedes);
 
   return {
     mqttServer: {
@@ -61,9 +63,10 @@ fastify.get('/mqttdata', async (request, reply) => {
       port: mqttServer.address().port
     },
     aedes: aedesInfo,
-    data: aedes
+    data: aedesData
   };
 });
+
 
 
 // ======================
