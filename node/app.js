@@ -21,7 +21,7 @@ fastify.get('/', async (request, reply) => {
     fastify.log.info("Incoming Request " + count);
 
       // Log full request body
-      const logData = JSON.stringify(body);
+      const logData = JSON.stringify(count);
       db.query(`INSERT INTO logs (data) VALUES (?)`, [logData], (err, result) => {
         if (err) {
           console.error('❌ Failed to log request:', err);
