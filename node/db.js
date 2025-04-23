@@ -3,11 +3,11 @@ const mysql = require('mysql2');
 
 // Use environment variables or config file in production
 const DB_CONFIG = {
-  host: 'sql.freedb.tech',
+  host: '94.136.185.134',
   port: 3306,
-  user: 'freedb_tejeet',
-  password: 'uq5RdT?3Vk!?xKT',
-  database: 'freedb_containernode'
+  user: 'root',
+  password: 'myroot',
+  database: 'echo.fleetsapi.com'
 };
 
 // Create a connection pool for better performance
