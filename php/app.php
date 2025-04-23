@@ -78,8 +78,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
     }
 } else {
+
+    $errorLog = [
+        'type' => "error",
+        'msg' => "else condition"
+    ];
+
+    $jsonData = json_encode($errorLog);
+    $stmt = $con->prepare("INSERT INTO logs (data) VALUES (?)");
+        $stmt->bind_param("s", $jsonData);
+        $stmt->execute();
+        $stmt->close();
+
     echo json_encode([
-        "error_num" => 1,
+        "error_num" => 0,
         "error_str" => "Invalid request method",
         "gpio_data" => []
     ]);
