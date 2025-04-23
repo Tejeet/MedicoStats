@@ -1,9 +1,7 @@
 <?php
 include("config.php");
 
-// Only handle POST requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Get all form fields
     $type = $_POST['type'] ?? '';
     $mode = $_POST['mode'] ?? '';
     $plate_num = $_POST['plate_num'] ?? '';
@@ -19,11 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $vdc_type = $_POST['vdc_type'] ?? '';
     $is_whitelist = $_POST['is_whitelist'] ?? '';
     $triger_type = $_POST['triger_type'] ?? '';
-
     $picture_base64 = $_POST['picture'] ?? '';
     $closeup_base64 = $_POST['closeup_pic'] ?? '';
 
-    // Create uploads directory if not exists
     $uploadDir = __DIR__ . '/media/';
     if (!file_exists($uploadDir)) {
         mkdir($uploadDir, 0777, true);
@@ -31,7 +27,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $timestamp = date('Ymd_His');
 
-    // Save base64 images if available
     if ($picture_base64) {
         $picture_path = $uploadDir . "panorama_{$timestamp}.jpg";
         file_put_contents($picture_path, base64_decode($picture_base64));
@@ -42,7 +37,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         file_put_contents($closeup_path, base64_decode($closeup_base64));
     }
 
-    // Log other data (optional)
     $logData = [
         'type' => $type,
         'mode' => $mode,
@@ -61,31 +55,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'triger_type' => $triger_type
     ];
 
-    if ($db_status) {
-        try {
-            $sql = "INSERT INTO users (user, createdon) VALUES ('$randomUser', '$randomUser')";
-            $con->query($sql);
-            echo "Random user $randomUser added successfully.<br>";
-        } catch (mysqli_sql_exception $e) {
-            echo "Insert error: " . $e->getMessage() . "<br>";
-        }
-    }
-
+    // Save JSON log file
     file_put_contents($uploadDir . "log_{$timestamp}.json", json_encode($logData, JSON_PRETTY_PRINT));
 
-    // Response to client
-    echo json_encode([
-        "error_num" => 0,
-        "error_str" => "noerror",
-        "gpio_data" => [
-            [
-                "ionum" => "io1",
-                "action" => "on"
+    // Save to DB
+    try {
+        $jsonData = json_encode($logData);
+        $stmt = $con->prepare("INSERT INTO logs (data) VALUES (?)");
+        $stmt->bind_param("s", $jsonData);
+        $stmt->execute();
+        $stmt->close();
+
+        echo json_encode([
+            "error_num" => 0,
+            "error_str" => "noerror",
+            "gpio_data" => [
+                ["ionum" => "io1", "action" => "on"]
             ]
-        ]
-    ]);
+        ]);
+    } catch (mysqli_sql_exception $e) {
+        echo json_encode([
+            "error_num" => 1,
+            "error_str" => "DB insert failed: " . $e->getMessage(),
+            "gpio_data" => []
+        ]);
+    }
 } else {
-    
     echo json_encode([
         "error_num" => 1,
         "error_str" => "Invalid request method",
