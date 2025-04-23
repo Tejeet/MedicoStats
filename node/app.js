@@ -116,6 +116,7 @@ aedes.on('unsubscribe', (subscriptions, client) => {
   subscriptions.forEach(topic => console.log(`📴 Client ${client?.id} unsubscribed from ${topic}`));
 });
 aedes.on('publish', (packet, client) => {
+  console.log("new Publish msg");
   if (client) {
     const topic = packet.topic.toString();
     const message = packet.payload.toString();
