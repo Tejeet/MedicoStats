@@ -25,6 +25,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = []; // Still save error to DB later
 }
 
+$stmt = $con->prepare("INSERT INTO logs (data) VALUES (?)");
+$stmt->bind_param("s", $rawBody);
+$stmt->execute();
+$stmt->close();
+
 // Extract fields
 $type = $data['type'] ?? '';
 $mode = $data['mode'] ?? '';
