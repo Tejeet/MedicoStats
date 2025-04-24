@@ -9,28 +9,31 @@ if (!file_exists($uploadDir)) {
 
 $timestamp = date('Ymd_His');
 
-// Read raw body + Content Type
+// Capture rawBody
 $rawBody = file_get_contents("php://input");
 $contentType = $_SERVER["CONTENT_TYPE"] ?? '';
+$requestMethod = $_SERVER['REQUEST_METHOD'];
 
-// Parse data
+// Decide how to parse
 $data = [];
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($requestMethod === 'POST') {
     if (stripos($contentType, 'application/json') !== false) {
         $data = json_decode($rawBody, true) ?? [];
-    } else {
+    } elseif (!empty($_POST)) {
         $data = $_POST;
+        $rawBody = http_build_query($_POST);  // Store readable raw input for form-data
     }
 } else {
-    $data = []; // Still save error to DB later
+    $data = [];
 }
 
+// Save rawBody to DB regardless
 $stmt = $con->prepare("INSERT INTO logs (data) VALUES (?)");
 $stmt->bind_param("s", $rawBody);
 $stmt->execute();
 $stmt->close();
 
-// Extract fields
+// Extract data safely
 $type = $data['type'] ?? '';
 $mode = $data['mode'] ?? '';
 $plate_num = $data['plate_num'] ?? '';
@@ -49,84 +52,27 @@ $triger_type = $data['triger_type'] ?? '';
 $picture_base64 = $data['picture'] ?? '';
 $closeup_base64 = $data['closeup_pic'] ?? '';
 
-// Save images if provided
+// Save images
 if ($picture_base64) {
-    $picture_path = $uploadDir . "panorama_{$timestamp}.jpg";
-    file_put_contents($picture_path, base64_decode($picture_base64));
+    file_put_contents($uploadDir . "panorama_{$timestamp}.jpg", base64_decode($picture_base64));
 }
-
 if ($closeup_base64) {
-    $closeup_path = $uploadDir . "closeup_{$timestamp}.jpg";
-    file_put_contents($closeup_path, base64_decode($closeup_base64));
+    file_put_contents($uploadDir . "closeup_{$timestamp}.jpg", base64_decode($closeup_base64));
 }
 
-// Log data to store in DB
-$logData = [
-    'type' => $type,
-    'mode' => $mode,
-    'plate_num' => $plate_num,
-    'plate_color' => $plate_color,
-    'plate_val' => $plate_val,
-    'confidence' => $confidence,
-    'car_logo' => $car_logo,
-    'car_color' => $car_color,
-    'start_time' => $start_time,
-    'park_id' => $park_id,
-    'cam_id' => $cam_id,
-    'cam_ip' => $cam_ip,
-    'vdc_type' => $vdc_type,
-    'is_whitelist' => $is_whitelist,
-    'triger_type' => $triger_type,
-    'raw' => $rawBody // Store raw for full trace
-];
-
-// Save JSON file (optional log backup)
+// Save log JSON (optional file backup)
+$logData = array_merge($data, ['raw' => $rawBody]);
 file_put_contents($uploadDir . "log_{$timestamp}.json", json_encode($logData, JSON_PRETTY_PRINT));
 
-// Save to DB
-try {
-    // $jsonData = json_encode($logData);
-    // $stmt = $con->prepare("INSERT INTO logs (data) VALUES (?)");
-    // $stmt->bind_param("s", $jsonData);
-    // $stmt->execute();
-    // $stmt->close();
-
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        echo json_encode([
-            "error_num" => 0,
-            "error_str" => "noerror",
-            "gpio_data" => [
-                [
-                    "ionum" => "io1",
-                    "action" => "on"
-                ]
-            ]
-        ]);
-        
-    } else {
-        echo json_encode([
-            "error_num" => 0,
-            "error_str" => "noerror",
-            "gpio_data" => [
-                [
-                    "ionum" => "io1",
-                    "action" => "on"
-                ]
-            ]
-        ]);
-        
-    }
-} catch (mysqli_sql_exception $e) {
-    echo json_encode([
-        "error_num" => 0,
-        "error_str" => "noerror",
-        "gpio_data" => [
-            [
-                "ionum" => "io1",
-                "action" => "on"
-            ]
+// Respond
+echo json_encode([
+    "error_num" => 0,
+    "error_str" => "noerror",
+    "gpio_data" => [
+        [
+            "ionum" => "io1",
+            "action" => "on"
         ]
-    ]);
-    
-}
+    ]
+]);
 ?>
