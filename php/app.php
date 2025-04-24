@@ -99,8 +99,7 @@ try {
     } else {
         echo json_encode([
             "error_num" => 0,
-            "error_str" => "Invalid request method",
-            "gpio_data" => []
+            "error_str" => "noerror"
         ]);
     }
 } catch (mysqli_sql_exception $e) {
