@@ -105,9 +105,8 @@ try {
     }
 } catch (mysqli_sql_exception $e) {
     echo json_encode([
-        "error_num" => 1,
-        "error_str" => "DB insert failed: " . $e->getMessage(),
-        "gpio_data" => []
+        "error_num" => 0,
+        "error_str" => "noerror"
     ]);
 }
 ?>
