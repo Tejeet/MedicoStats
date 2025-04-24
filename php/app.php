@@ -71,7 +71,7 @@ $response = json_encode([
     "gpio_data" => [
         [
             "ionum" => "io1",
-            "action" => "on"
+            "action" => "off"
         ]
     ]
 ]);
