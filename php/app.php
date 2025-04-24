@@ -64,8 +64,8 @@ if ($closeup_base64) {
 $logData = array_merge($data, ['raw' => $rawBody]);
 file_put_contents($uploadDir . "log_{$timestamp}.json", json_encode($logData, JSON_PRETTY_PRINT));
 
-// Respond
-echo json_encode([
+// Prepare and send JSON response with proper Content-Length
+$response = json_encode([
     "error_num" => 0,
     "error_str" => "noerror",
     "gpio_data" => [
@@ -75,4 +75,7 @@ echo json_encode([
         ]
     ]
 ]);
-?>
+
+header('Content-Type: application/json; charset=utf-8');
+header('Content-Length: ' . strlen($response));
+echo $response;
