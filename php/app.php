@@ -52,6 +52,7 @@ $triger_type = $data['triger_type'] ?? '';
 $picture_base64 = $data['picture'] ?? '';
 $closeup_base64 = $data['closeup_pic'] ?? '';
 
+
 // Save images
 if ($picture_base64) {
     file_put_contents($uploadDir . "panorama_{$timestamp}.jpg", base64_decode($picture_base64));
@@ -71,7 +72,7 @@ $response = json_encode([
     "gpio_data" => [
         [
             "ionum" => "io1",
-            "action" => "off"
+            "action" => ($plate_num == "HR67A9100") ? "on" : "off"
         ]
     ]
 ]);
