@@ -85,11 +85,11 @@ file_put_contents($uploadDir . "log_{$timestamp}.json", json_encode($logData, JS
 
 // Save to DB
 try {
-    $jsonData = json_encode($logData);
-    $stmt = $con->prepare("INSERT INTO logs (data) VALUES (?)");
-    $stmt->bind_param("s", $jsonData);
-    $stmt->execute();
-    $stmt->close();
+    // $jsonData = json_encode($logData);
+    // $stmt = $con->prepare("INSERT INTO logs (data) VALUES (?)");
+    // $stmt->bind_param("s", $jsonData);
+    // $stmt->execute();
+    // $stmt->close();
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode([
