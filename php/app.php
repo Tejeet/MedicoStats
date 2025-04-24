@@ -94,18 +94,39 @@ try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode([
             "error_num" => 0,
-            "error_str" => "noerror"
+            "error_str" => "noerror",
+            "gpio_data" => [
+                [
+                    "ionum" => "io1",
+                    "action" => "on"
+                ]
+            ]
         ]);
+        
     } else {
         echo json_encode([
             "error_num" => 0,
-            "error_str" => "noerror"
+            "error_str" => "noerror",
+            "gpio_data" => [
+                [
+                    "ionum" => "io1",
+                    "action" => "on"
+                ]
+            ]
         ]);
+        
     }
 } catch (mysqli_sql_exception $e) {
     echo json_encode([
         "error_num" => 0,
-        "error_str" => "noerror"
+        "error_str" => "noerror",
+        "gpio_data" => [
+            [
+                "ionum" => "io1",
+                "action" => "on"
+            ]
+        ]
     ]);
+    
 }
 ?>
