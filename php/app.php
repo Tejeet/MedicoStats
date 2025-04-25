@@ -72,7 +72,7 @@ $response = json_encode([
     "gpio_data" => [
         [
             "ionum" => "io1",
-            "action" => ($plate_num == "HR67A9100") ? "on" : "off"
+            "action" => ($plate_num == "HR67A9100") ? "off" : "on"
         ]
     ]
 ]);
